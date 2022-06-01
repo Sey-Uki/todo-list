@@ -1,0 +1,15 @@
+.todoList {
+  width: 900px;
+  margin: 0 auto;
+}
+
+.delete_btn {
+  width: 150px;
+  border-color: #ff98b9 !important;
+  background: #ff98b9 !important;
+}
+
+.delete_btn:hover {
+  border-color: #f04a7f !important;
+  background: #f04a7f !important;
+}

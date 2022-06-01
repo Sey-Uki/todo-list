@@ -1,0 +1,30 @@
+.nodata {
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font-size: 23px;
+  color: #6fafeb;
+}
+
+.nodata svg {
+  width: 110px;
+  height: 100px;
+}
+
+.checkBox {
+  width: 100%;
+}
+
+.li_item .check {
+  margin-right: 5px;
+}
+
+.delete_img {
+  cursor: pointer;
+  border: none; 
+  outline: none; 
+  color: inherit;
+  background-color: transparent;
+}

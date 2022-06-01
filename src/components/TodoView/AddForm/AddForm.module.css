@@ -54,3 +54,8 @@
   border-color: #03b7c7;
   background: #03b7c7;
 }
+
+.add_btn:focus {
+  border-color: #03b7c7;
+  background: #03b7c7;
+}
