@@ -1,26 +1,56 @@
 import styles from './List.module.css';
-import { List, Button, Divider, Checkbox } from 'antd';
-import { TodoItem } from '../ToDoList';
+import { List, Button, Divider, Checkbox, Modal } from 'antd';
 import {ReactComponent  as DeleteI} from '../../../img/delete.svg';
 import {ReactComponent  as NodataI} from '../../../img/nodata.svg';
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
+import { deleteTodos, fetchTodos, selectTodos, TodosState } from '../../../features/todo/todoSlice';
+import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 interface IListProps {
   indeterminate: boolean,
   checkAll: boolean,
-  todoList: TodoItem[],
   handleChange: any,
-  deleteTodo: any,
   handleCheckBoxChange: any,
   deleteMultipleTodos: any,
-  checkedItemList: number[],
+  checkedItemList: string[],
   onCheckAllChange: any
 }
 
+const { confirm } = Modal;
+
 
 export const ListComponent = (prop: IListProps) => {
+
+  const todos = useAppSelector(selectTodos);
+  const { status, error } = useSelector((state: TodosState) => state)
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(fetchTodos());
+  }, [])
+  
+  const deleteTodo = (itemId: string) => {
+    if (itemId) {
+      confirm({
+        title: 'Are you sure?',
+        icon: <ExclamationCircleOutlined />,
+        okType: 'danger',
+        onOk() {
+          dispatch(deleteTodos(itemId));
+        },
+      });
+    }
+  }
+
+
   const CheckboxGroup = Checkbox.Group;
   return (
     <>
+
+    {status === "loading" && <h1>Loading....</h1>}
+    {error && `Error: ${error}`}
       <div className={styles.list}>
         <Divider orientation="left">List</Divider>
         <Checkbox indeterminate={prop.indeterminate} checked={prop.checkAll} onChange={prop.onCheckAllChange}>
@@ -30,13 +60,13 @@ export const ListComponent = (prop: IListProps) => {
           bordered
         >
           <CheckboxGroup value={prop.checkedItemList} onChange={prop.handleCheckBoxChange} className={styles.checkBox}>
-            {prop.todoList.length > 0 ?
-              prop.todoList.map((item) => {
+            {todos.length > 0 ?
+              todos.map((item) => {
                 return (<List.Item className={styles.li_item} key={item.id} >
                   <label>
                     <Checkbox className={styles.check} onChange={(e) => prop.handleChange(e, item.id)} value={item.id} />{item.title}
                   </label>
-                  <div className={styles.delete_img} onClick={() => { prop.deleteTodo(item.id) }}>
+                  <div className={styles.delete_img} onClick={() => { deleteTodo(item.id) }}>
                     <DeleteI />
                   </div>
                 </List.Item>)

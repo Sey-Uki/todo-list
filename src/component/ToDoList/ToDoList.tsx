@@ -6,75 +6,43 @@ import { AddForm } from './AddForm/AddForm';
 import { ListComponent } from './List/List';
 import { Form, Modal } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { TODOS_URL } from '../../utils/constants';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
+import { addTodo, deleteTodos, fetchTodos, selectTodos } from '../../features/todo/todoSlice';
 
 export interface TodoItem {
-  id: number;
+  id: string;
   title: string;
 }
+
 const { confirm } = Modal;
 
+
 export const ToDoList = () => {
-  const [checkedItemList, setCheckedItemList] = useState<number[]>([]);
+  const [checkedItemList, setCheckedItemList] = useState<string[]>([]);
   const [todoList, setTodoList] = useState<TodoItem[]>([]);
   const [checkAll, setCheckAll] = useState(false);
   const [indeterminate, setIndeterminate] = useState(true);
 
+  const dispatch = useAppDispatch();
+  const todos = useAppSelector(selectTodos);
+
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    fetch('https://616205fa374925001763153b.mockapi.io/api/todo')
-      .then((res) => res.json())
-      .then((data) => data.length > 0 && setTodoList(data))
-      .catch((err) => {
-        console.log(err)
-      })
-  }, [])
 
   const handleSubmit = ({ title }: { title: string }) => {
-    console.log(title)
-    const newTodo = {
-      id: todoList.length > 0 ? +todoList[todoList.length - 1].id + 1 : 1,
-      title,
-    }
+    const newTodo = { title }
 
-    fetch('https://616205fa374925001763153b.mockapi.io/api/todo',
-      {
-        method: "POST",
-        body: JSON.stringify(newTodo),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      }).then(() => {
-        setTodoList([...todoList, newTodo])
-        form.resetFields();
-      })
+    dispatch(addTodo(newTodo)).then(() => {
+      form.resetFields();
+    })
   }
 
-  const handleChange = (e: CheckboxChangeEvent, itemId: number) => {
+  const handleChange = (e: CheckboxChangeEvent, itemId: string) => {
     if (e.target.checked) {
       setCheckedItemList([...checkedItemList, itemId])
     } else {
       setCheckedItemList(checkedItemList.filter((item) => item !== itemId))
-    }
-  }
-
-
-  const deleteTodo = (itemId: number) => {
-
-    if (itemId) {
-      confirm({
-        title: 'Are you sure?',
-        icon: <ExclamationCircleOutlined />,
-        okType: 'danger',
-        onOk() {
-          fetch(`https://616205fa374925001763153b.mockapi.io/api/todo/${itemId}`,
-            {
-              method: "DELETE"
-            }).then(() => {
-              setTodoList(todoList.filter(item => item.id !== itemId));
-            })
-        },
-      });
     }
   }
 
@@ -85,13 +53,10 @@ export const ToDoList = () => {
       okType: 'danger',
       onOk() {
         checkedItemList.map((id) => {
-          fetch(`https://616205fa374925001763153b.mockapi.io/api/todo/${id}`,
-            {
-              method: "DELETE"
-            })
+          dispatch(deleteTodos(id));
         })
 
-        setTodoList(todoList.filter((item) => item.id !== checkedItemList.find((checkId) => checkId === item.id)))
+        setTodoList(todos.filter((item) => item.id !== checkedItemList.find((checkId) => checkId === item.id)))
         setCheckedItemList([])
         setIndeterminate(true);
       },
@@ -99,29 +64,27 @@ export const ToDoList = () => {
   }
 
   const onCheckAllChange = (e: CheckboxChangeEvent) => {
-    setCheckedItemList(e.target.checked ? todoList.map((todo) => todo.id) : []);
+    setCheckedItemList(e.target.checked ? todos.map((todo) => todo.id) : []);
     setIndeterminate(false);
     setCheckAll(e.target.checked);
   };
 
   const handleCheckBoxChange = (checkedValues: any) => {
     setCheckedItemList(checkedValues);
-    setIndeterminate(!!checkedValues.length && checkedValues.length < todoList.length);
-    setCheckAll(checkedValues.length === todoList.length);
+    setIndeterminate(!!checkedValues.length && checkedValues.length < todos.length);
+    setCheckAll(checkedValues.length === todos.length);
   };
 
   return (
     <div className={styles.todo}>
-      <AddForm 
-        form={form} 
-        handleSubmit={handleSubmit} 
+      <AddForm
+        form={form}
+        handleSubmit={handleSubmit}
       />
       <ListComponent
         indeterminate={indeterminate}
         checkAll={checkAll}
-        todoList={todoList}
         handleChange={handleChange}
-        deleteTodo={deleteTodo}
         handleCheckBoxChange={handleCheckBoxChange}
         deleteMultipleTodos={deleteMultipleTodos}
         checkedItemList={checkedItemList}
