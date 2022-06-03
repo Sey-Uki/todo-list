@@ -3,7 +3,7 @@
   margin: 0 auto;
 }
 
-.delete_btn {
+.delete_btn, .delete_btn_disabled {
   width: 150px;
   border-color: #ff98b9 !important;
   background: #ff98b9 !important;

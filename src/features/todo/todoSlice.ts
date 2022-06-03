@@ -7,6 +7,8 @@ import { CheckboxValueType } from "antd/lib/checkbox/Group";
 import type { RootState } from "../../redux/store";
 import { TODOS_URL } from "../../utils/constants";
 
+type Status = 'idle' | 'loading' | 'fetching' | 'resolved' |'rejected';
+
 interface ITodoPayload {
   title: string;
 }
@@ -18,13 +20,13 @@ export interface ITodo {
 
 interface ITodosState {
   todoArray: ITodo[];
-  status: string | null;
+  status: Status;
   error: SerializedError | null;
 }
 
 const initialState: ITodosState = {
   todoArray: [],
-  status: null,
+  status: 'idle',
   error: null,
 };
 
@@ -41,7 +43,7 @@ export const fetchTodos = createAsyncThunk(
 );
 
 export const addTodo = createAsyncThunk(
-  "todos/addTodos",
+  "todos/addTodo",
   async (newTodo: ITodoPayload, { rejectWithValue }) => {
     try {
       const response = await fetch(TODOS_URL, {
@@ -75,13 +77,12 @@ export const deleteMultipleTodos = createAsyncThunk(
   "todos/deleteMultipleTodos",
   async (checkedItems: CheckboxValueType[], { rejectWithValue }) => {
     try {
-      const responsePromises = checkedItems.map(async (id) => {
-        return await fetch(`${TODOS_URL}/${id}`, {
+      checkedItems.forEach(async (id) => {
+        await fetch(`${TODOS_URL}/${id}`, {
           method: "DELETE",
         });
       });
 
-      await Promise.all(responsePromises);
       return checkedItems;
     } catch (err) {
       return rejectWithValue(err);
@@ -109,11 +110,12 @@ export const todoSlice = createSlice({
       })
 
       .addCase(addTodo.pending, (state) => {
-        state.status = "loading";
+        state.status = "fetching";
         state.error = null;
       })
       .addCase(addTodo.fulfilled, (state, { payload }) => {
         state.status = "resolved";
+        console.log('newTodo', payload);
         state.todoArray = [...state.todoArray, payload];
       })
       .addCase(addTodo.rejected, (state, { error }) => {
@@ -121,6 +123,10 @@ export const todoSlice = createSlice({
         state.error = error;
       })
 
+      .addCase(deleteSingleTodo.pending, (state) => {
+        state.status = "fetching";
+        state.error = null;
+      })
       .addCase(deleteSingleTodo.fulfilled, (state, { payload }) => {
         state.status = "resolved";
         state.todoArray = state.todoArray.filter((item) => item.id !== payload);
@@ -130,6 +136,10 @@ export const todoSlice = createSlice({
         state.error = error;
       })
 
+      .addCase(deleteMultipleTodos.pending, (state) => {
+        state.status = "fetching";
+        state.error = null;
+      })
       .addCase(deleteMultipleTodos.fulfilled, (state, { payload }) => {
         state.status = "resolved";
         state.todoArray = state.todoArray.filter(

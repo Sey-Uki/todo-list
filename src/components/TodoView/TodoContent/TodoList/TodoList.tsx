@@ -30,7 +30,7 @@ export const TodoList: React.FC<IProps> = ({
           className={styles.checkBox}
         >
           {todos.length > 0 ? (
-            todos.map((item: any) => {
+            todos.map((item: ITodo) => {
               return (
                 <List.Item className={styles.li_item} key={item.id}>
                   <label>

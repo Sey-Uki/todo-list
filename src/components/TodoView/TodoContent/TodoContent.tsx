@@ -1,13 +1,12 @@
 import styles from "./TodoContent.module.css";
 import { Button, Divider, Checkbox, Modal } from "antd";
-import { useAppDispatch } from "../../../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
 import {
   deleteMultipleTodos,
   deleteSingleTodo,
   fetchTodos,
   selectTodosData,
 } from "../../../features/todo/todoSlice";
-import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { CheckboxChangeEvent } from "antd/lib/checkbox";
@@ -17,7 +16,7 @@ import { TodoList } from "./TodoList/TodoList";
 const { confirm } = Modal;
 
 export const TodoContent: React.FC = () => {
-  const { status, error, todoArray: todos } = useSelector(selectTodosData);
+  const { status, error, todoArray: todos } = useAppSelector(selectTodosData);
 
   const [checkedItemList, setCheckedItemList] = useState<CheckboxValueType[]>(
     []
@@ -95,7 +94,6 @@ export const TodoContent: React.FC = () => {
         >
           Check all
         </Checkbox>
-
         <TodoList
           todos={todos}
           checkedItemList={checkedItemList}
@@ -103,15 +101,26 @@ export const TodoContent: React.FC = () => {
           handleChange={handleChange}
           deleteTodo={deleteTodo}
         />
-
-        <Button
-          type="primary"
-          danger
-          onClick={handleMultipleDeletion}
-          className={styles.delete_btn}
-        >
-          Delete
-        </Button>
+        {checkedItemList.length > 0 ? (
+          <Button
+            loading={status === "fetching"}
+            type="primary"
+            danger
+            onClick={handleMultipleDeletion}
+            className={styles.delete_btn}
+          >
+            Delete
+          </Button>
+        ) : (
+          <Button
+            type="primary"
+            danger
+            disabled
+            className={styles.delete_btn_disabled}
+          >
+            Delete
+          </Button>
+        )}
       </div>
     </section>
   );

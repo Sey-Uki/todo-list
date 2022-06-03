@@ -1,11 +1,13 @@
 import styles from "./AddForm.module.css";
 import { Button, Input, Form } from "antd";
-import { useAppDispatch } from "../../../redux/hooks";
-import { addTodo } from "../../../features/todo/todoSlice";
+import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
+import { addTodo, selectTodosData } from "../../../features/todo/todoSlice";
 
 export const AddForm: React.FC = () => {
   const dispatch = useAppDispatch();
   const [form] = Form.useForm();
+
+  const { status } = useAppSelector(selectTodosData);
 
   const handleSubmit = ({ title }: { title: string }) => {
     const newTodo = { title };
@@ -14,6 +16,7 @@ export const AddForm: React.FC = () => {
       form.resetFields();
     });
   };
+
   return (
     <>
       <div className={styles.main__img}></div>
@@ -34,7 +37,12 @@ export const AddForm: React.FC = () => {
             <Input placeholder="Add to do" className={styles.add_input} />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" className={styles.add_btn}>
+            <Button
+              loading={status === "fetching"}
+              type="primary"
+              htmlType="submit"
+              className={styles.add_btn}
+            >
               Add
             </Button>
           </Form.Item>
